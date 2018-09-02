@@ -1,6 +1,5 @@
 package com.grig.main;
 
-import com.grig.controller.MainController;
 import com.grig.controller.MessageController;
 import com.grig.interfaces.WindowHandler;
 import com.grig.model.Model;
@@ -16,12 +15,21 @@ public class Main extends Application {
     public void start(final Stage primaryStage) throws Exception {
         Model model = new Model();
 
-        WindowHandler windowHandler = new FXWindowsHandlerImpl(primaryStage);
-        windowHandler.addAllWindows(new Window("mainWindow","/MainWindow.fxml", new MainController(model)));
+        WindowHandler windowHandler = new FXWindowsHandlerImpl();
         windowHandler.addAllWindows(new Window("messageWindow", "/MessageWindow.fxml", new MessageController(model)));
 
-        windowHandler.changeWindow("mainWindow");
-        windowHandler.show();
+        if (model.isAuthenticated()) {
+            windowHandler.changeWindow("messageWindow");
+        } else {
+            model.getAuthenticateDialog();
+            windowHandler.changeWindow("messageWindow");
+        }
+
+
+
+
+
+
 
     }
 

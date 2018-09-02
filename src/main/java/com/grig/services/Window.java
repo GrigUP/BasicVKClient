@@ -1,38 +1,38 @@
 package com.grig.services;
 
 import com.grig.interfaces.*;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 public class Window {
-    private String title;
-    private String fxmlPath;
-    private Stage stage;
+    private Stage stage = new Stage();
+    private FXMLLoader fxmlLoader;
     private Controller controller;
-    private WindowHandler windowHandler;
 
     public Window(String title, String fxmlPath, Controller controller) {
-        this.title = title;
-        this.fxmlPath = fxmlPath;
-        this.controller = controller;
+        fxmlLoader = new FXMLLoader(getClass().getResource(fxmlPath));
+        fxmlLoader.setController(controller);
+        try {
+            stage.setScene(new Scene(fxmlLoader.load()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        stage.setTitle(title);
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public String getFxmlPath() {
-        return fxmlPath;
+    public Controller getController() {
+        return fxmlLoader.getController();
     }
 
     public Stage getStage() {
         return stage;
     }
 
-    public Controller getController() {
-        return controller;
-    }
-
-    public void setStage(Stage stage) {
-        this.stage = stage;
+    public String getTitle() {
+        return stage.getTitle();
     }
 }

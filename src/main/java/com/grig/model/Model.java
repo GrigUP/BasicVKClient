@@ -1,12 +1,18 @@
 package com.grig.model;
 
+import com.grig.services.MessageManager;
+import com.grig.services.RequestManager;
 import com.grig.services.Token;
+import com.grig.services.TokenSaverAndChecker;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.Scene;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
+import javafx.stage.Stage;
+import javafx.concurrent.Worker;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Random;
+import java.io.IOException;
 
 public class Model {
     final private int application_id = 6672647;
@@ -17,62 +23,41 @@ public class Model {
     final private String response_type = "token";
     final private double version = 5.8;
 
+    private boolean isAuthenticated;
     private Token token;
 
-    public Token getToken() {
-        return token;
+    public Model() {
+        String request = null;
+        try {
+            request = TokenSaverAndChecker.getTokenFromFile(getTokenFilePath());
+        } catch (IOException e) {
+            e.getStackTrace();
+        }
+
+        if (request.contains("access_token=") && request.contains("user_id=") && request.contains("expires_id=")) {
+            String[] keys = getSecureDataFromResponce(request);
+            token = new Token(keys[0], Integer.parseInt(keys[1]), Integer.parseInt(keys[2]));
+            isAuthenticated = true;
+        } else  isAuthenticated = false;
     }
 
-    public void setToken(Token token) {
-        this.token = token;
+    public boolean isAuthenticated() {
+        return isAuthenticated;
     }
 
-    public String getTokenFilePath() {
+    private String getTokenFilePath() {
         return tokenFilePath;
     }
 
-    private String getRequest(String requestUrl) {
-        try {
-            URL url = new URL(requestUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Content-length", "0");
-            connection.setConnectTimeout(30000);
-
-            System.out.println(connection.getURL());
-
-            connection.connect();
-
-            int responseCode = connection.getResponseCode();
-            if(responseCode == 200) {
-                BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-
-                String line;
-                StringBuilder sb = new StringBuilder();
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
-                    sb.append("\n");
-                }
-                br.close();
-
-                return sb.toString();
-            } else {
-                System.out.println("Response code:" + responseCode);
-            }
-
-        } catch(Exception e) { e.printStackTrace(); }
-
-        return null;
-    }
-
     public String sendMessage(int id, String message) {
-        String response = getRequest(getMessageUrl(id, message));
-        System.out.println(response);
-        return response;
+        return MessageManager.sendMessage(id, message, token);
     }
 
-    public String getAccessTokenUrl() {
+    public String getConversations(int offset, int count) {
+        return MessageManager.getMessageList(offset, count, token);
+    }
+
+    private String getAccessTokenUrl() {
         return String.format("https://oauth.vk.com/authorize?client_id=%d&" +
                 "display=%s&" +
                 "redirect_uri=%s&" +
@@ -81,15 +66,7 @@ public class Model {
                 "v=%s&", application_id, display, redirect_uri, scope, response_type, version+"");
     }
 
-    public String getMessageUrl(int id, String message) {
-        Random random = new Random();
-        return String.format("https://api.vk.com/method/messages.send?user_id=%d&" +
-                "message=%s&" +
-                "access_token=%s&" +
-                "v=%s", id, message, token.getAccess_token(), version+"");
-    }
-
-    public String[] getSecureDataFromResponce(String response) {
+    private String[] getSecureDataFromResponce(String response) {
         String parametersString = response.substring(response.indexOf("#")+1);
 
         String[] arrayParameters = new String[3];
@@ -114,4 +91,33 @@ public class Model {
         }
         return arrayParameters;
     }
+
+    public void getAuthenticateDialog() {
+        final WebView webView = new WebView();
+        final WebEngine webEngine = webView.getEngine();
+
+        final Stage tempStage = new Stage();
+        tempStage.setScene(new Scene(webView));
+        webView.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
+            public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) {
+                if (newValue == Worker.State.SUCCEEDED && webView.getEngine().getDocument().getDocumentURI().contains("#access_token=")) {
+                    String url = webView.getEngine().getDocument().getDocumentURI();
+                    String[] keys = getSecureDataFromResponce(url);
+                    token = new Token(keys[0], Integer.parseInt(keys[1]), Integer.parseInt(keys[2]));
+                    tempStage.close();
+
+                    try {
+                        TokenSaverAndChecker.writeTokenToFile(getTokenFilePath(), token);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        webEngine.load(getAccessTokenUrl());
+        tempStage.showAndWait();
+    }
+
+
 }
