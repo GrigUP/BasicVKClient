@@ -18,19 +18,7 @@ public class Main extends Application {
         WindowHandler windowHandler = new FXWindowsHandlerImpl();
         windowHandler.addAllWindows(new Window("messageWindow", "/MessageWindow.fxml", new MessageController(model)));
 
-        if (model.isAuthenticated()) {
-            windowHandler.changeWindow("messageWindow");
-        } else {
-            model.getAuthenticateDialog();
-            windowHandler.changeWindow("messageWindow");
-        }
-
-
-
-
-
-
-
+        windowHandler.changeWindow("messageWindow");
     }
 
     public static void main(String[] args) {

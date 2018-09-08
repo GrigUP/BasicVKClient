@@ -10,9 +10,18 @@ public class MessageManager {
         return RequestManager.sendRequest(getMessageListUrl(offset, count, 1, token));
     }
 
-    public String getMessagesById(int id) {
-        return null;
+    public static String getMessageHistory(int id, int offset, int count, Token token) {
+        return RequestManager.sendRequest(getMessageHistoryByIdUrl(id, offset, count, token));
     }
+
+    private static String getMessageHistoryByIdUrl(int id, int offset, int count, Token token) {
+        return String.format("https://api.vk.com/method/messages.getHistory?user_id=%d&" +
+                "offset=%d&" +
+                "count=%d&" +
+                "access_token=%s&" +
+                "v=%s", id, offset, count, token.getAccess_token(), "5.8");
+    }
+
 
     private static String getMessageUrl(int id, String message, Token token) {
         return String.format("https://api.vk.com/method/messages.send?user_id=%d&" +

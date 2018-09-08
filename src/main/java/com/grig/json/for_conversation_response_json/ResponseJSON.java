@@ -1,4 +1,4 @@
-package com.grig.json;
+package com.grig.json.for_conversation_response_json;
 
 public class ResponseJSON {
     int count;
@@ -16,4 +16,6 @@ public class ResponseJSON {
     public Profile[] getProfiles() {
         return profiles;
     }
+
+
 }

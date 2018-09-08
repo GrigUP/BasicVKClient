@@ -1,20 +1,29 @@
 package com.grig.controller;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.grig.interfaces.Controller;
 import com.grig.interfaces.WindowHandler;
-import com.grig.json.*;
+import com.grig.json.for_conversation_response_json.Items;
+import com.grig.json.for_conversation_response_json.JSONMessage;
+import com.grig.json.get_history_response_json.Item;
+import com.grig.json.get_history_response_json.JSONHistory;
+import com.grig.json.get_users_response_json.ResponseJSON;
 import com.grig.model.Model;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class MessageController implements Controller {
     private WindowHandler windowHandler;
@@ -30,36 +39,82 @@ public class MessageController implements Controller {
     }
 
     @FXML
-    ListView<String> messageList;
+    ListView<ResponseJSON> messageList;
+
+    @FXML
+    ListView<Item> messages;
+
+    @FXML
+    TextField textMessages;
+
+    @FXML
+    Button button;
 
     @FXML
     public void initialize() {
         updateMessageList();
+        messageList.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                updateMessageHistory();
+            }
+        });
     }
 
     public void sendButton(ActionEvent actionEvent) {
-//        int id = Integer.parseInt(idTextField.getText());
-//        String message = textArea.getText();
-//        model.sendMessage(id, message);
+        if (!textMessages.getText().isEmpty()) {
+            ResponseJSON responseJSON = messageList.getSelectionModel().getSelectedItem();
+
+            int id = responseJSON.getId();
+            String message = textMessages.getText();
+            message = message.replaceAll(" ", "%20");
+
+            model.sendMessage(id, message);
+
+            textMessages.setText("");
+            updateMessageList();
+            messageList.getSelectionModel().select(responseJSON);
+            updateMessageHistory();
+        }
     }
 
-    public void updateMessageList() {
+    private void updateMessageList() {
         Gson gson = new Gson();
-        String JSONString = model.getConversations(0, 50);
-        System.out.println(JSONString);
-        JSONMessage jsonMessage = gson.fromJson(JSONString, JSONMessage.class);
+        JSONMessage jsonMessage = gson.fromJson(model.getConversations(0, 50), JSONMessage.class);
 
-        List<String> messages = new ArrayList<>();
+        ArrayList<Integer> usersId = new ArrayList<>();
+
         for (Items items:jsonMessage.getResponseJSON().getItems()) {
-            if (items.getLast_message().getAttachments().length != 0 && items.getLast_message().getAttachments()[0].getType().equals("sticker")) {
-                messages.add("[sticker]");
-            } else if (items.getLast_message().getAttachments().length != 0 && items.getLast_message().getAttachments()[0].getType().equals("wall")) {
-                messages.add("[wall]");
-            } else messages.add(items.getLast_message().getText());
+            usersId.add(items.getLast_message().getPeer_id());
         }
 
-        ObservableList<String> observableList = FXCollections.observableArrayList(messages);
+        Map<Integer, ResponseJSON> profiles = model.getUsersInfoById(usersId);
+
+        List<ResponseJSON> messages = new ArrayList<>();
+        for (int id:usersId) {
+            messages.add(profiles.get(id));
+        }
+
+        ObservableList<ResponseJSON> observableList = FXCollections.observableArrayList(messages);
         messageList.setItems(observableList);
         messageList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+    }
+
+    private void updateMessageHistory() {
+        ResponseJSON user = messageList.getSelectionModel().getSelectedItem();
+        int selectedUserId = user.getId();
+        Gson gson = new Gson();
+        JSONHistory jsonHistory = gson.fromJson(model.getMessageHistory(selectedUserId, 0, 20), JSONHistory.class);
+
+        ArrayList<Item> itemsList = new ArrayList<>();
+        for (Item item:jsonHistory.getResponse().getItems()) {
+            itemsList.add(item);
+        }
+
+        Collections.reverse(itemsList);
+        ObservableList<Item> observableList = FXCollections.observableArrayList(itemsList);
+        messages.setItems(observableList);
+
+        messages.scrollTo(observableList.size()-1);
     }
 }

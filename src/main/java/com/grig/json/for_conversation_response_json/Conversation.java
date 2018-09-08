@@ -1,4 +1,4 @@
-package com.grig.json;
+package com.grig.json.for_conversation_response_json;
 
 public class Conversation {
     Peer peer;

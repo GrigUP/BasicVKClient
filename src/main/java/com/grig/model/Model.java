@@ -1,9 +1,7 @@
 package com.grig.model;
 
-import com.grig.services.MessageManager;
-import com.grig.services.RequestManager;
-import com.grig.services.Token;
-import com.grig.services.TokenSaverAndChecker;
+import com.grig.json.get_users_response_json.ResponseJSON;
+import com.grig.services.*;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
@@ -13,6 +11,8 @@ import javafx.stage.Stage;
 import javafx.concurrent.Worker;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public class Model {
     final private int application_id = 6672647;
@@ -27,18 +27,7 @@ public class Model {
     private Token token;
 
     public Model() {
-        String request = null;
-        try {
-            request = TokenSaverAndChecker.getTokenFromFile(getTokenFilePath());
-        } catch (IOException e) {
-            e.getStackTrace();
-        }
-
-        if (request.contains("access_token=") && request.contains("user_id=") && request.contains("expires_id=")) {
-            String[] keys = getSecureDataFromResponce(request);
-            token = new Token(keys[0], Integer.parseInt(keys[1]), Integer.parseInt(keys[2]));
-            isAuthenticated = true;
-        } else  isAuthenticated = false;
+        getAuthorization();
     }
 
     public boolean isAuthenticated() {
@@ -55,6 +44,14 @@ public class Model {
 
     public String getConversations(int offset, int count) {
         return MessageManager.getMessageList(offset, count, token);
+    }
+
+    public String getMessageHistory(int id, int offset, int count) {
+        return MessageManager.getMessageHistory(id, offset, count, token);
+    }
+
+    public Map<Integer, ResponseJSON> getUsersInfoById(List<Integer> ids) {
+        return UsersManager.getUsersInfoByIds(ids, token);
     }
 
     private String getAccessTokenUrl() {
@@ -119,5 +116,18 @@ public class Model {
         tempStage.showAndWait();
     }
 
+    public void getAuthorization() {
+        String request = null;
+        try {
+            request = TokenSaverAndChecker.getTokenFromFile(getTokenFilePath());
+        } catch (IOException e) {
+            e.getStackTrace();
+        }
 
+        if (request.contains("access_token=") && request.contains("user_id=") && request.contains("expires_id=")) {
+            String[] keys = getSecureDataFromResponce(request);
+            token = new Token(keys[0], Integer.parseInt(keys[1]), Integer.parseInt(keys[2]));
+            isAuthenticated = true;
+        } else  getAuthenticateDialog();
+    }
 }

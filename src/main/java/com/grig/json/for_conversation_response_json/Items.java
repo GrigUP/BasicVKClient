@@ -1,14 +1,14 @@
-package com.grig.json;
+package com.grig.json.for_conversation_response_json;
 
 public class Items {
     Conversation conversation;
-    Last_message last_message;
+    LastMessage last_message;
 
     public Conversation getConversation() {
         return conversation;
     }
 
-    public Last_message getLast_message() {
+    public LastMessage getLast_message() {
         return last_message;
     }
 }

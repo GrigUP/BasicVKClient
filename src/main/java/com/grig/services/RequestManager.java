@@ -16,8 +16,6 @@ public class RequestManager {
             connection.setRequestProperty("Content-length", "0");
             connection.setConnectTimeout(30000);
 
-            System.out.println(connection.getURL());
-
             connection.connect();
 
             int responseCode = connection.getResponseCode();
