@@ -80,7 +80,7 @@ public class AuthInfoDaoImpl implements AuthInfoDao {
                 authInfo.setId(resultSet.getInt("id"));
                 authInfo.setUser_id(resultSet.getInt("user_id"));
                 authInfo.setAccess_token(resultSet.getString("access_token"));
-                authInfo.setExpires_id(resultSet.getInt("expires_id"));
+                authInfo.setExpires_id(resultSet.getLong("expires_id"));
 
                 dataList.add(authInfo);
             }

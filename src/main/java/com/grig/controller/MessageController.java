@@ -2,7 +2,7 @@ package com.grig.controller;
 
 import com.google.gson.Gson;
 import com.grig.interfaces.Controller;
-import com.grig.interfaces.WindowHandler;
+import com.grig.interfaces.WindowsManager;
 import com.grig.json.for_conversation_response_json.Items;
 import com.grig.json.for_conversation_response_json.JSONMessage;
 import com.grig.json.get_history_response_json.Item;
@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MessageController implements Controller {
-    private WindowHandler windowHandler;
+    private WindowsManager windowsManager;
     private Model model;
 
     public MessageController(Model model) {
@@ -34,8 +34,8 @@ public class MessageController implements Controller {
     }
 
     @Override
-    public void setWindowHandler(WindowHandler windowHandler) {
-        this.windowHandler = windowHandler;
+    public void setWindowsManager(WindowsManager windowsManager) {
+        this.windowsManager = windowsManager;
     }
 
     @FXML

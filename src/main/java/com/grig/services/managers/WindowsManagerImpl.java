@@ -1,21 +1,20 @@
-package com.grig.services;
+package com.grig.services.managers;
 
-import com.grig.interfaces.WindowHandler;
+import com.grig.interfaces.WindowsManager;
+import com.grig.services.Window;
 import javafx.fxml.FXMLLoader;
-import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FXWindowsHandlerImpl implements WindowHandler {
+public class WindowsManagerImpl implements WindowsManager {
     private Window currentWindow;
-    private FXMLLoader fxmlLoader;
     private List<Window> windowsList = new ArrayList<>();
 
     @Override
     public void addAllWindows(Window... windows) {
         for (Window window:windows) {
-            window.getController().setWindowHandler(this);
+            window.getController().setWindowsManager(this);
             windowsList.add(window);
         }
     }

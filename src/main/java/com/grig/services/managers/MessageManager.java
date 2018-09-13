@@ -1,4 +1,6 @@
-package com.grig.services;
+package com.grig.services.managers;
+
+import com.grig.services.Token;
 
 public class MessageManager {
 

@@ -1,8 +1,9 @@
-package com.grig.services;
+package com.grig.services.managers;
 
 import com.google.gson.Gson;
 import com.grig.json.get_users_response_json.JSONProfile;
 import com.grig.json.get_users_response_json.ResponseJSON;
+import com.grig.services.Token;
 
 import java.util.HashMap;
 import java.util.List;

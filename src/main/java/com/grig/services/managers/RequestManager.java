@@ -1,4 +1,4 @@
-package com.grig.services;
+package com.grig.services.managers;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

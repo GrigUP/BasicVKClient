@@ -2,10 +2,10 @@ package com.grig.services;
 
 public class Token {
     private String access_token;
-    private int expires_in;
+    private long expires_in;
     private int user_id;
 
-    public Token(String access_token, int expires_in, int user_id) {
+    public Token(String access_token, long expires_in, int user_id) {
         this.access_token = access_token;
         this.expires_in = expires_in;
         this.user_id = user_id;
@@ -15,11 +15,11 @@ public class Token {
         return access_token;
     }
 
-    public int getExpires_in() {
+    public long getExpires_in() {
         return expires_in;
     }
 
-    public int getUser_id() {
+    public long getUser_id() {
         return user_id;
     }
 }

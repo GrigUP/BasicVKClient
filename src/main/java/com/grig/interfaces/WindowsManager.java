@@ -2,7 +2,7 @@ package com.grig.interfaces;
 
 import com.grig.services.Window;
 
-public interface WindowHandler {
+public interface WindowsManager {
 
     void addAllWindows(Window... windows);
 

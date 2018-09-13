@@ -3,14 +3,13 @@ package com.grig.database.model;
 public class AuthInfo {
     private Integer id;
     private String access_token;
-    private Integer expires_id;
+    private Long expires_id;
     private Integer user_id;
 
     public AuthInfo() {
     }
 
-    public AuthInfo(Integer id, String access_token, Integer expires_id, Integer user_id) {
-        this.id = id;
+    public AuthInfo(String access_token, Long expires_id, Integer user_id) {
         this.access_token = access_token;
         this.expires_id = expires_id;
         this.user_id = user_id;
@@ -32,11 +31,11 @@ public class AuthInfo {
         this.access_token = access_token;
     }
 
-    public Integer getExpires_id() {
+    public Long getExpires_id() {
         return expires_id;
     }
 
-    public void setExpires_id(Integer expires_id) {
+    public void setExpires_id(Long expires_id) {
         this.expires_id = expires_id;
     }
 

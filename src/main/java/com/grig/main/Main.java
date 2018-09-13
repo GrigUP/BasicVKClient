@@ -4,10 +4,10 @@ import com.grig.controller.MessageController;
 import com.grig.database.DataBaseFactory;
 import com.grig.database.dao.AuthInfoDao;
 import com.grig.database.impl.AuthInfoDaoImpl;
-import com.grig.database.model.AuthInfo;
-import com.grig.interfaces.WindowHandler;
+import com.grig.interfaces.WindowsManager;
 import com.grig.model.Model;
-import com.grig.services.FXWindowsHandlerImpl;
+import com.grig.services.managers.AccountDataBaseManager;
+import com.grig.services.managers.WindowsManagerImpl;
 import com.grig.services.Window;
 
 import javafx.application.Application;
@@ -21,19 +21,17 @@ public class Main extends Application {
         String dbURL = "jdbc:mysql://localhost:3306/vk_client_db";
         String dbUserName = "root";
         String dbPassword = "32553255";
-        DataBaseFactory dataBaseFactory = new DataBaseFactory(dbDriver, dbURL, dbUserName, dbPassword);
-        AuthInfoDao authInfoDao = new AuthInfoDaoImpl(dataBaseFactory);
 
-        AuthInfo authInfo = new AuthInfo(1, "lolkek", 10, 1);
+        AuthInfoDao authInfoDao = new AuthInfoDaoImpl(new DataBaseFactory(dbDriver, dbURL, dbUserName, dbPassword));
+        AccountDataBaseManager accountDataBaseManager = new AccountDataBaseManager(authInfoDao);
 
-        authInfoDao.delete(authInfo);
-//        Model model = new Model();
+        Model model = new Model(accountDataBaseManager);
 //
-//        WindowHandler windowHandler = new FXWindowsHandlerImpl();
-//        windowHandler.addAllWindows(new Window("messageWindow", "/MessageWindow.fxml", new MessageController(model)));
-//
-//
-//        windowHandler.changeWindow("messageWindow");
+        WindowsManager windowsManager = new WindowsManagerImpl();
+        windowsManager.addAllWindows(new Window("messageWindow", "/MessageWindow.fxml", new MessageController(model)));
+
+
+        windowsManager.changeWindow("messageWindow");
     }
 
     public static void main(String[] args) {

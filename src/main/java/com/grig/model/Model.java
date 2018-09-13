@@ -1,20 +1,28 @@
 package com.grig.model;
 
+import com.grig.database.model.AuthInfo;
 import com.grig.json.get_users_response_json.ResponseJSON;
 import com.grig.services.*;
+import com.grig.services.managers.AccountDataBaseManager;
+import com.grig.services.managers.MessageManager;
+import com.grig.services.managers.UsersManager;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.concurrent.Worker;
+import javafx.stage.WindowEvent;
 
-import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 public class Model {
+    final private int user_id = 21013306;
     final private int application_id = 6672647;
     final private String redirect_uri = "https://oauth.vk.com/blank.html";
     final private String tokenFilePath = "src/main/resources/token_folder/token";
@@ -25,9 +33,15 @@ public class Model {
 
     private boolean isAuthenticated;
     private Token token;
+    private AccountDataBaseManager accountDataBaseManager;
 
-    public Model() {
+    public Model(AccountDataBaseManager accountDataBaseManager) {
+        this.accountDataBaseManager = accountDataBaseManager;
         getAuthorization();
+    }
+
+    public int getUser_id() {
+        return user_id;
     }
 
     public boolean isAuthenticated() {
@@ -94,20 +108,34 @@ public class Model {
         final WebEngine webEngine = webView.getEngine();
 
         final Stage tempStage = new Stage();
+        tempStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                Platform.exit();
+            }
+        });
+
         tempStage.setScene(new Scene(webView));
+        tempStage.setHeight(400);
+        tempStage.setWidth(660);
         webView.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
             public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) {
                 if (newValue == Worker.State.SUCCEEDED && webView.getEngine().getDocument().getDocumentURI().contains("#access_token=")) {
                     String url = webView.getEngine().getDocument().getDocumentURI();
                     String[] keys = getSecureDataFromResponce(url);
-                    token = new Token(keys[0], Integer.parseInt(keys[1]), Integer.parseInt(keys[2]));
-                    tempStage.close();
 
-                    try {
-                        TokenSaverAndChecker.writeTokenToFile(getTokenFilePath(), token);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    token = new Token(keys[0], Long.parseLong(keys[1]), Integer.parseInt(keys[2]));
+                    AuthInfo authInfo = new AuthInfo(keys[0], Long.parseLong(keys[1]) + new Date().getTime(), Integer.parseInt(keys[2]));
+
+                    if (!accountDataBaseManager.isExists(user_id)) {
+                        accountDataBaseManager.insertAuthInfo(authInfo);
                     }
+
+                    if (accountDataBaseManager.checkTokenAliveByUserId(user_id)) {
+                        accountDataBaseManager.updateInfo(authInfo);
+                    }
+
+                    tempStage.close();
                 }
             }
         });
@@ -117,19 +145,14 @@ public class Model {
     }
 
     public void getAuthorization() {
-        String request = null;
-        try {
-            request = TokenSaverAndChecker.getTokenFromFile(getTokenFilePath());
-        } catch (IOException e) {
-            e.getStackTrace();
+        if (accountDataBaseManager.isExists(user_id) && !accountDataBaseManager.checkTokenAliveByUserId(user_id)) {
+            System.out.println("Token find and alive!");
+            AuthInfo authInfo = accountDataBaseManager.getAuthInfoById(user_id);
+            token = new Token(authInfo.getAccess_token(), authInfo.getExpires_id(), authInfo.getUser_id());
         }
-
-        if (request.contains("access_token=") && request.contains("user_id=") && request.contains("expires_id=")) {
-
-
-            String[] keys = getSecureDataFromResponce(request);
-            token = new Token(keys[0], Integer.parseInt(keys[1]), Integer.parseInt(keys[2]));
-            isAuthenticated = true;
-        } else  getAuthenticateDialog();
+          else {
+            System.out.println("Token is old or can't be find!");
+            getAuthenticateDialog();
+        }
     }
 }
