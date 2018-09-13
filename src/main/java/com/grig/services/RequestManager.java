@@ -29,7 +29,6 @@ public class RequestManager {
                     sb.append("\n");
                 }
                 br.close();
-
                 return sb.toString();
             } else {
                 System.out.println("Response code:" + responseCode);

@@ -8,7 +8,7 @@ public class LastMessage {
     int peer_id;
     String text;
     int conversation_message_id;
-    String[] fwd_messages;
+    LastMessage[] fwd_messages;
     boolean important;
     int random_id;
     Attachment[] attachments;
@@ -42,7 +42,7 @@ public class LastMessage {
         return conversation_message_id;
     }
 
-    public String[] getFwd_messages() {
+    public LastMessage[] getFwd_messages() {
         return fwd_messages;
     }
 

@@ -125,6 +125,8 @@ public class Model {
         }
 
         if (request.contains("access_token=") && request.contains("user_id=") && request.contains("expires_id=")) {
+
+
             String[] keys = getSecureDataFromResponce(request);
             token = new Token(keys[0], Integer.parseInt(keys[1]), Integer.parseInt(keys[2]));
             isAuthenticated = true;

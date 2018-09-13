@@ -104,7 +104,7 @@ public class MessageController implements Controller {
         ResponseJSON user = messageList.getSelectionModel().getSelectedItem();
         int selectedUserId = user.getId();
         Gson gson = new Gson();
-        JSONHistory jsonHistory = gson.fromJson(model.getMessageHistory(selectedUserId, 0, 20), JSONHistory.class);
+        JSONHistory jsonHistory = gson.fromJson(model.getMessageHistory(selectedUserId, 0, 15), JSONHistory.class);
 
         ArrayList<Item> itemsList = new ArrayList<>();
         for (Item item:jsonHistory.getResponse().getItems()) {
