@@ -2,14 +2,14 @@ package com.grig.json.for_conversation_response_json;
 
 public class ResponseJSON {
     int count;
-    Items[] items;
+    Item[] items;
     Profile[] profiles;
 
     public int getCount() {
         return count;
     }
 
-    public Items[] getItems() {
+    public Item[] getItems() {
         return items;
     }
 

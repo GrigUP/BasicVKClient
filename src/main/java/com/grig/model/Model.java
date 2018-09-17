@@ -22,19 +22,31 @@ import java.util.List;
 import java.util.Map;
 
 public class Model {
+
+    /**
+     * id для пользователя, который использует приложение перманентно
+     * (должен храниться где-то на устройстве).
+     */
     final private int user_id = 21013306;
+
+    /**
+     * Настройки разрабатываемого приложения с https://vk.com/dev
+     */
     final private int application_id = 6672647;
     final private String redirect_uri = "https://oauth.vk.com/blank.html";
-    final private String tokenFilePath = "src/main/resources/token_folder/token";
     final private String display = "page";
     final private String scope = "messages";
     final private String response_type = "token";
     final private double version = 5.8;
 
-    private boolean isAuthenticated;
     private Token token;
     private AccountDataBaseManager accountDataBaseManager;
 
+    /**
+     * При создании экземпляра класса модели происходит привязка, используемого для доступа
+     * к базе данных экземпляра класса AccountDataBaseManager, и авторизация пользователя в приложении.
+     * @param accountDataBaseManager
+     */
     public Model(AccountDataBaseManager accountDataBaseManager) {
         this.accountDataBaseManager = accountDataBaseManager;
         getAuthorization();
@@ -44,30 +56,27 @@ public class Model {
         return user_id;
     }
 
-    public boolean isAuthenticated() {
-        return isAuthenticated;
-    }
-
-    private String getTokenFilePath() {
-        return tokenFilePath;
-    }
-
+    // Делигируем менеджеру сообщений запрос на отправку сообщения
     public String sendMessage(int id, String message) {
         return MessageManager.sendMessage(id, message, token);
     }
 
+    // Делигируем менеджеру сообщений запрос на получения списка дивлогов
     public String getConversations(int offset, int count) {
         return MessageManager.getMessageList(offset, count, token);
     }
 
+    // Делигируем менеджеру сообщений запрос на получение истории диалога с пользоавтелем id
     public String getMessageHistory(int id, int offset, int count) {
         return MessageManager.getMessageHistory(id, offset, count, token);
     }
 
-    public Map<Integer, ResponseJSON> getUsersInfoById(List<Integer> ids) {
+    // Делигируем менеджеру профилей запрос на получение данных о пользователей по листу из id
+    public Map<Integer, ResponseJSON> getUsersInfoByIds(List<Integer> ids) {
         return UsersManager.getUsersInfoByIds(ids, token);
     }
 
+    // Вспомогательный метод по подготовке URL для получения токена доступа
     private String getAccessTokenUrl() {
         return String.format("https://oauth.vk.com/authorize?client_id=%d&" +
                 "display=%s&" +
@@ -77,6 +86,8 @@ public class Model {
                 "v=%s&", application_id, display, redirect_uri, scope, response_type, version+"");
     }
 
+    // Парсинг URL-ответа с токеном от сервера VK, в результате массив строк
+    // [токен, время действие токена, id пользователя]
     private String[] getSecureDataFromResponce(String response) {
         String parametersString = response.substring(response.indexOf("#")+1);
 
@@ -103,10 +114,16 @@ public class Model {
         return arrayParameters;
     }
 
+    /**
+     * В случае необходимости в получении нового токена доступа открывается панель WebView,
+     * в которой необходиомо ввести данные для авторизации, после чего будет получен новый токен,
+     * обновлен или добавлен в базу данных.
+     */
     public void getAuthenticateDialog() {
         final WebView webView = new WebView();
         final WebEngine webEngine = webView.getEngine();
 
+        // В случае закрытия окна авторизации дальнейшее использование приложения бессмысленно
         final Stage tempStage = new Stage();
         tempStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
@@ -118,23 +135,34 @@ public class Model {
         tempStage.setScene(new Scene(webView));
         tempStage.setHeight(400);
         tempStage.setWidth(660);
+
+        /**
+         * Добавление слушателя для WebView. В случае, если страница загружена и содержит в URL-строке
+         * токен доступа, производится парсинг данной строки, извлечение требуеммых данных, и занесения их
+         * в базу, либо обновления уже старых данных.
+         */
         webView.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
             public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) {
                 if (newValue == Worker.State.SUCCEEDED && webView.getEngine().getDocument().getDocumentURI().contains("#access_token=")) {
                     String url = webView.getEngine().getDocument().getDocumentURI();
+                    // парсинг
                     String[] keys = getSecureDataFromResponce(url);
 
-                    token = new Token(keys[0], Long.parseLong(keys[1]), Integer.parseInt(keys[2]));
-                    AuthInfo authInfo = new AuthInfo(keys[0], Long.parseLong(keys[1]) + new Date().getTime(), Integer.parseInt(keys[2]));
+                    // обновления токена
+                    token = new Token(keys[0], Long.parseLong(keys[1])*1000 + new Date().getTime(), Integer.parseInt(keys[2]));
 
-                    if (!accountDataBaseManager.isExists(user_id)) {
+                    // обновление данных в базе
+                    AuthInfo authInfo = new AuthInfo(keys[0], Long.parseLong(keys[1])*1000 + new Date().getTime(), Integer.parseInt(keys[2]));
+                    AuthInfo dbAuthInfo = accountDataBaseManager.getAuthInfoById(user_id);
+                    System.out.println(dbAuthInfo);
+                    System.out.println(authInfo);
+                    if (dbAuthInfo == null) {
                         accountDataBaseManager.insertAuthInfo(authInfo);
-                    }
-
-                    if (accountDataBaseManager.checkTokenAliveByUserId(user_id)) {
+                    } else if (dbAuthInfo.getExpires_id() < authInfo.getExpires_id()) {
                         accountDataBaseManager.updateInfo(authInfo);
                     }
 
+                    // закрытие панели WebView
                     tempStage.close();
                 }
             }
@@ -144,15 +172,30 @@ public class Model {
         tempStage.showAndWait();
     }
 
+    /**
+     * Метод по авторизации пользователя в приложении, в случае если срок действия токена
+     * в базе данных не истек и он существует, предоставляется доступ к данным пользователя.
+     */
     public void getAuthorization() {
-        if (accountDataBaseManager.isExists(user_id) && !accountDataBaseManager.checkTokenAliveByUserId(user_id)) {
-            System.out.println("Token find and alive!");
-            AuthInfo authInfo = accountDataBaseManager.getAuthInfoById(user_id);
-            token = new Token(authInfo.getAccess_token(), authInfo.getExpires_id(), authInfo.getUser_id());
-        }
-          else {
-            System.out.println("Token is old or can't be find!");
+
+        // загрузка авторизационных данных о пользователе с базы данных
+        AuthInfo authInfo = accountDataBaseManager.getAuthInfoById(user_id);
+
+        // существую ли данные
+        if (authInfo == null) {
+            System.out.println("User info by id:" + user_id + " not exists!");
             getAuthenticateDialog();
+        }
+
+        // не истек ли срок действия
+        else if (authInfo.getExpires_id() < new Date().getTime()) {
+            System.out.println("Access token is not alive!");
+            getAuthenticateDialog();
+        } else {
+
+            // запись данных с бд для использования приложением
+            token = new Token(authInfo.getAccess_token(), authInfo.getExpires_id(), authInfo.getUser_id());
+            System.out.println("User exists and access token is alive!");
         }
     }
 }

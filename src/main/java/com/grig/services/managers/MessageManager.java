@@ -9,7 +9,7 @@ public class MessageManager {
     }
 
     public static String getMessageList(int offset, int count, Token token) {
-        return RequestManager.sendRequest(getMessageListUrl(offset, count, 1, token));
+        return RequestManager.sendRequest(getMessageListUrl(offset, count, 0, token));
     }
 
     public static String getMessageHistory(int id, int offset, int count, Token token) {

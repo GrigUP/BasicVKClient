@@ -1,6 +1,6 @@
 package com.grig.services.managers;
 
-import com.grig.database.dao.AuthInfoDao;
+import com.grig.database.JDBC.dao.AuthInfoDao;
 import com.grig.database.model.AuthInfo;
 
 import java.util.Date;
@@ -12,34 +12,17 @@ public class AccountDataBaseManager {
         this.authInfoDao = authInfoDao;
     }
 
-    public boolean checkTokenAliveByUserId(int user_id) {
-        AuthInfo authInfo = authInfoDao.readByUserId(user_id);
-
-        Long currentUnixTime = new Date().getTime();
-
-        if (authInfo != null) {
-            Long tokenExpiresUnixTime = authInfo.getExpires_id();
-
-            return tokenExpiresUnixTime > currentUnixTime;
-        }
-
-        return false;
-    }
-
-    public boolean isExists(int user_id) {
-        AuthInfo dbAuthInfo = authInfoDao.readByUserId(user_id);
-
-        return dbAuthInfo != null;
-    }
-
+    // update
     public void updateInfo(AuthInfo updated) {
         authInfoDao.update(updated);
     }
 
+    // read
     public AuthInfo getAuthInfoById(int user_id) {
         return authInfoDao.readByUserId(user_id);
     }
 
+    // create
     public void insertAuthInfo(AuthInfo authInfo) {
         authInfoDao.create(authInfo);
     }

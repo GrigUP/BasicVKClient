@@ -19,6 +19,10 @@ public class WindowsManagerImpl implements WindowsManager {
         }
     }
 
+    /**
+     * Смена текущего активного окна -> stage по исмени (title).
+     * @param windowName
+     */
     @Override
     public void changeWindow(String windowName) {
         Window newWindow = getWindowByName(windowName);
@@ -26,16 +30,12 @@ public class WindowsManagerImpl implements WindowsManager {
         currentWindow.getStage().show();
     }
 
-    @Override
-    public void show() {
-        currentWindow.getStage().show();
-    }
-
-    @Override
-    public void close() {
-        currentWindow.getStage().close();
-    }
-
+    /**
+     * Метод по поиску в листе окна с текущим именем (title)
+     * @param windowName
+     * @return
+     * Возвращает окно с title == windowName, иначе null.
+     */
     private Window getWindowByName(String windowName) {
         for (Window window:windowsList) {
             if (window.getTitle().equals(windowName)) return window;

@@ -1,4 +1,4 @@
-package com.grig.database.dao;
+package com.grig.database.JDBC.dao;
 
 import com.grig.database.model.AuthInfo;
 

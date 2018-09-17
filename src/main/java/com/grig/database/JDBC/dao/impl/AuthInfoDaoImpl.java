@@ -1,7 +1,7 @@
-package com.grig.database.impl;
+package com.grig.database.JDBC.dao.impl;
 
-import com.grig.database.DataBaseFactory;
-import com.grig.database.dao.AuthInfoDao;
+import com.grig.database.JDBC.dao.AuthInfoDao;
+import com.grig.database.factory.DataBaseFactory;
 import com.grig.database.model.AuthInfo;
 
 import java.sql.Connection;

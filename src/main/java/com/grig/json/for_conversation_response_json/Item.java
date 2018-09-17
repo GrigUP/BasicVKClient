@@ -1,6 +1,6 @@
 package com.grig.json.for_conversation_response_json;
 
-public class Items {
+public class Item {
     Conversation conversation;
     LastMessage last_message;
 

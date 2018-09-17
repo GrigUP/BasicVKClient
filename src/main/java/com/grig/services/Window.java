@@ -13,6 +13,14 @@ public class Window {
     private FXMLLoader fxmlLoader;
     private Controller controller;
 
+    /**
+     * @param title
+     * Название для окна, используется также для смены Window, используя WindowsManager.
+     * @param fxmlPath
+     * Путь до файла Fxml.
+     * @param controller
+     * Контролле для определенного окна.
+     */
     public Window(String title, String fxmlPath, Controller controller) {
         fxmlLoader = new FXMLLoader(getClass().getResource(fxmlPath));
         fxmlLoader.setController(controller);
