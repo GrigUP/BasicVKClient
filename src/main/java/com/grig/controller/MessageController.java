@@ -56,16 +56,16 @@ public class MessageController implements Controller {
     @FXML
     public void initialize() {
 
-        // Таймер по обновлению листа диалогов
-        Timeline fiveSecondsWonder = new Timeline(new KeyFrame(Duration.seconds(10), new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent event) {
-                updateMessageList();
-            }
-        }));
-        fiveSecondsWonder.setCycleCount(Timeline.INDEFINITE);
-        fiveSecondsWonder.play();
+//        // Таймер по обновлению листа диалогов
+//        Timeline fiveSecondsWonder = new Timeline(new KeyFrame(Duration.seconds(10), new EventHandler<ActionEvent>() {
+//
+//            @Override
+//            public void handle(ActionEvent event) {
+//                updateMessageList();
+//            }
+//        }));
+//        fiveSecondsWonder.setCycleCount(Timeline.INDEFINITE);
+//        fiveSecondsWonder.play();
 
         // Наблюдатель ЛКМ для обновления истории сообщений для выбранного диалога
         messageList.setOnMouseClicked(new EventHandler<MouseEvent>() {
