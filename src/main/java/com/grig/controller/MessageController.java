@@ -15,6 +15,8 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Orientation;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Duration;
@@ -55,7 +57,7 @@ public class MessageController implements Controller {
      */
     @FXML
     public void initialize() {
-
+        updateMessageList();
 //        // Таймер по обновлению листа диалогов
 //        Timeline fiveSecondsWonder = new Timeline(new KeyFrame(Duration.seconds(10), new EventHandler<ActionEvent>() {
 //
@@ -96,6 +98,16 @@ public class MessageController implements Controller {
             updateMessageList();
             messageList.getSelectionModel().select(responseJSON);
             updateMessageHistory();
+        } else {
+            ScrollBar scrollbar = null;
+            for (Node node : messages.lookupAll(".scroll-bar")) {
+                if (node instanceof ScrollBar) {
+                    ScrollBar bar = (ScrollBar) node;
+                    if (bar.getOrientation().equals(Orientation.VERTICAL)) {
+                        System.out.println(bar);
+                    }
+                }
+            }
         }
     }
 
@@ -146,7 +158,7 @@ public class MessageController implements Controller {
 
         // для данного диалога запрашиваем с сервера историю
         Gson gson = new Gson();
-        JSONHistory jsonHistory = gson.fromJson(model.getMessageHistory(selectedUserId, 0, 2), JSONHistory.class);
+        JSONHistory jsonHistory = gson.fromJson(model.getMessageHistory(selectedUserId, 0, 30), JSONHistory.class);
 
         // собираем историю в лист
         ArrayList<Item> itemsList = new ArrayList<>();
